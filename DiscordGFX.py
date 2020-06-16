@@ -26,8 +26,7 @@ class Screne:
         self.scene = [self.filler]*(size[0]*size[1])
 
     def convert_to_absolute(self,x,y) -> int:
-        if y > self.size[1]:
-            raise Exception(f'y is greater than {self.size[0]-1}')
+
         return y*self.size[0] + x
 
     def get_pixel(self,x,y) -> str:
@@ -37,6 +36,9 @@ class Screne:
         if len(value) > 1:
             raise Exception('value must be 1 character')
         
+        if x < 0 or x >= self.size[0] or y < 0 or y >= self.size[1]:
+            return
+
         self.scene[self.convert_to_absolute(x,y)] = value
         
 
@@ -181,8 +183,11 @@ class Screne:
             self.draw_circle(object,value,fill)
             return
         elif type(object) == objects.Triangle and fill:
+            
             self.draw_filled_triangle(object,value)
             return
+
+
         for line in object.get_lines():
             steep = math.fabs(line[3]-line[1]) > math.fabs(line[2]-line[0])
             if steep:
@@ -226,15 +231,25 @@ class Screne:
                     y += ystep
                     error += dx
     
-    def set_image(self,image,value):
+    def set_image(self,image,value,koef=140):
         file = Image.open(image)
+        
         file.thumbnail(self.size,Image.ANTIALIAS)
         data = numpy.asarray(file)
         for y in range(len(data)):
             for x in range(len(data[y])):
-                i = data[y][x][0] + data[y][x][1] + data[y][x][2] + data[y][x][3]
-                if i > 140:
-                    scene.set_pixel(x,y,value)
+                if len(data.shape) > 2:
+                    i = 0
+                    for n in range(data.shape[2]):
+                        i += data[y][x][n]
+                    #i = data[y][x][0] + data[y][x][1] + data[y][x][2] + data[y][x][3]
+                    if i > koef:
+                        scene.set_pixel(x,y,value)
+                else: 
+                    i = data[y][x]
+                    if i < koef:
+                        scene.set_pixel(x,y,value)
+        
                     
              
 
@@ -259,7 +274,8 @@ if __name__ == '__main__':
     ##sq = objects.Tetragon((1,1,40,4,20,15,5,10))
     ##cr = objects.Circle((50,20),15)
     time.sleep(5)
-    scene.draw_object(triangle,'■',False)
+    #scene.set_image('pt.jpg','■',100)
+    #scene.draw_object(triangle,'■',False)
     
     #scene.draw_object(line,'■')
     #scene.draw_object(line1,'■')
