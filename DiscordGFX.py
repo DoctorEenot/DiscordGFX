@@ -32,7 +32,7 @@ class Screne:
     def get_pixel(self,x,y) -> str:
         return self.scene[self.convert_to_absolute(x,y)]
 
-    def set_pixel(self,x,y,value:str):
+    def set_pixel(self,x,y,value='■'):
         if len(value) > 1:
             raise Exception('value must be 1 character')
         
@@ -132,7 +132,7 @@ class Screne:
                 x -= 1
                 radius_error += 2*(y-x+1)
         
-    def draw_filled_triangle(self,object:objects.Triangle,value:str):
+    def draw_filled_triangle(self,object:objects.Triangle,value='■'):
         P0 = (object.points[0],object.points[1])
         P1 = (object.points[2],object.points[3])
         P2 = (object.points[4],object.points[5])
@@ -178,7 +178,7 @@ class Screne:
                 self.set_pixel(x,y,value)
 
 
-    def draw_object(self,object:objects.Object,value:str,fill = False):
+    def draw_object(self,object:objects.Object,value='■',fill = False):
         if type(object) == objects.Circle:
             self.draw_circle(object,value,fill)
             return
@@ -231,24 +231,23 @@ class Screne:
                     y += ystep
                     error += dx
     
-    def set_image(self,image,value,koef=140):
+    def set_image(self,image,position:tuple,size=True,value='■',koef=128,rev=True):
         file = Image.open(image)
-        
-        file.thumbnail(self.size,Image.ANTIALIAS)
-        data = numpy.asarray(file)
+        if size == True:
+            file.thumbnail(size,Image.ANTIALIAS)
+        else:
+            file = file.resize(size)
+        gray = file.convert('L')
+        bw = gray.point(lambda x: 0 if x<koef else 255, '1')
+
+        data = numpy.asarray(bw)
         for y in range(len(data)):
             for x in range(len(data[y])):
-                if len(data.shape) > 2:
-                    i = 0
-                    for n in range(data.shape[2]):
-                        i += data[y][x][n]
-                    #i = data[y][x][0] + data[y][x][1] + data[y][x][2] + data[y][x][3]
-                    if i > koef:
-                        scene.set_pixel(x,y,value)
-                else: 
-                    i = data[y][x]
-                    if i < koef:
-                        scene.set_pixel(x,y,value)
+                point = data[y][x]
+                if rev:
+                    point = not point
+                if point:
+                    self.set_pixel(x+position[0],y+position[1],value)
         
                     
              
@@ -256,11 +255,10 @@ class Screne:
 
 
 
-
 if __name__ == '__main__':
     scene = Screne(filler = '□',border = '-')
     
-    triangle = objects.Triangle((37,6,100,32,2,17))
+    #triangle = objects.Triangle((37,6,100,32,2,17))
     #line = objects.Line((0,0,15,20))
     #line1 = objects.Line((0,20,15,0))
 
@@ -273,8 +271,10 @@ if __name__ == '__main__':
     #line7 = objects.Line((45,0,55,0))
     ##sq = objects.Tetragon((1,1,40,4,20,15,5,10))
     ##cr = objects.Circle((50,20),15)
+    #y_axis = objects.Line((0,0,0,scene.size[1]-1))
+    
     time.sleep(5)
-    #scene.set_image('pt.jpg','■',100)
+    scene.set_image('Hiel.jpg',(0,0),scene.size,rev=True)
     #scene.draw_object(triangle,'■',False)
     
     #scene.draw_object(line,'■')
