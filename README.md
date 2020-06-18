@@ -1,7 +1,7 @@
 # DiscordGFX
 Graphics engine for text messages(firstly designed for Discord)
 
-DiscordGFX.py - main engine(for now only 2D)
+DiscordGFX.py - main 2D engine
 
 To use you must open chat in discord because it sends "pixels" as text message
 
