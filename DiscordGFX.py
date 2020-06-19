@@ -3,8 +3,8 @@ import pyautogui             #pip install pyautogui
 import time                  
 import math
 import objects
-from PIL import Image        #pip install Pillow
-import numpy                 #pip install numpy
+#from PIL import Image        #pip install Pillow
+#import numpy                 #pip install numpy
 
 
 
@@ -231,19 +231,11 @@ class Screne:
                     y += ystep
                     error += dx
     
-    def set_image(self,image,position:tuple,size=True,value='■',koef=128,rev=True):
-        file = Image.open(image)
-        if size == True:
-            file.thumbnail(size,Image.ANTIALIAS)
-        else:
-            file = file.resize(size)
-        gray = file.convert('L')
-        bw = gray.point(lambda x: 0 if x<koef else 255, '1')
-
-        data = numpy.asarray(bw)
-        for y in range(len(data)):
-            for x in range(len(data[y])):
-                point = data[y][x]
+    
+    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=True):
+        for y in range(len(sprite.data)):
+            for x in range(len(sprite.data[y])):
+                point = sprite.data[y][x]
                 if rev:
                     point = not point
                 if point:
@@ -257,7 +249,7 @@ class Screne:
 
 if __name__ == '__main__':
     scene = Screne(filler = '□',border = '-')
-    
+    #scene = Screne(filler=' ',border='-')
     #triangle = objects.Triangle((37,6,100,32,2,17))
     #line = objects.Line((0,0,15,20))
     #line1 = objects.Line((0,20,15,0))
@@ -274,7 +266,11 @@ if __name__ == '__main__':
     #y_axis = objects.Line((0,0,0,scene.size[1]-1))
     
     time.sleep(5)
-    scene.set_image('Hiel.jpg',(0,0),scene.size,rev=True)
+    sprite = objects.Sprite('pent.jpg',scene.size)
+    #sprite.rotate(180)
+    scene.set_sprite(sprite,(0,0),rev=True)
+    #scene.set_image('ck.png',(0,0),scene.size,rev=False)
+    #scene.set_image('qr.png',(0,0),scene.size,rev=True)
     #scene.draw_object(triangle,'■',False)
     
     #scene.draw_object(line,'■')
