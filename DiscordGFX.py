@@ -236,7 +236,10 @@ class Screne:
         for y in range(len(sprite.data)):
             for x in range(len(sprite.data[y])):
                 point = sprite.data[y][x]
+                
                 if not rev:
+                    point = not point
+                if point:
                     self.set_pixel(x+position[0],y+position[1],value)
                 
         
