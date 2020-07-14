@@ -7,13 +7,6 @@ class Object:
     def get_lines(self):
         return (self.points)
 
-class Line(Object):
-    def __init__(self,points):
-        if len(points) != 4:
-            raise Exception('Only one line can be in line')
-        self.points = points
-    def get_lines(self):
-        return [self.points]
 
 class Triangle(Object):
     def __init__(self,points):

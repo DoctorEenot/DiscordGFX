@@ -55,15 +55,19 @@ class Screne:
 
     
     def print(self,timeout=1,sides=True):
-        if self.border != None:  
-            self.set_to_clipboard(f'{self.border}'*self.size[0])
+        '''
+        Only for screen!
+        '''
+
+        if self.border != None:
+            horizontal_border = f'{self.border}'*self.size[0]
+            self.set_to_clipboard(horizontal_border)
             self.copy()
             if sides:
-                for y in range(1,self.size[1]-1):
+                for y in range(0,self.size[1]):
                     self.set_pixel(0,y,self.border)
                     self.set_pixel(self.size[0]-1,y,self.border)
-
-        
+       
         
         if self.size[0]*self.size[1]<=2000:            
             buf = ''.join(self.scene[0:self.size[0]])+'\n'
@@ -97,10 +101,14 @@ class Screne:
                 
                 time.sleep(timeout)
 
+        #if self.border != None:
+        #    self.set_to_clipboard(horizontal_border)
+        #    self.copy()
+
     def fill(self):
         self.scene = [self.filler]*(self.size[0]*self.size[1])
 
-    def draw_circle(self,circle:objects.Circle,value:str,fill):
+    def draw_circle(self,circle:objects.Circle,value:str,fill=False):
         x = circle.radius
         y = 0
         radius_error = 1 - x
@@ -177,71 +185,73 @@ class Screne:
             for x in range(x1,x2):
                 self.set_pixel(x,y,value)
 
+    def draw_line(self,line,value='■'):
+        '''
+        line = (x1,y1,x2,y2)
+        '''
+        steep = math.fabs(line[3]-line[1]) > math.fabs(line[2]-line[0])
+        if steep:
+            x0 = line[1]
+            y0 = line[0]
+            x1 = line[3]
+            y1 = line[2]
+        else:
+            x0 = line[0]
+            y0 = line[1]
+            x1 = line[2]
+            y1 = line[3]
+
+        if x0 > x1:
+            b = x0
+            x0 = x1
+            x1 = b
+
+            b = y0
+            y0 = y1
+            y1 = b
+
+        dx = x1 - x0
+        dy = math.fabs(y1-y0)
+        error = dx // 2
+        if (y0 < y1):
+            ystep = 1
+        else:
+            ystep = -1
+
+        y = y0
+
+        for x in range(x0,x1+1):
+            if steep:
+                self.set_pixel(y,x,value)
+            else:
+                self.set_pixel(x,y,value)
+
+            error -= dy
+            if error < 0:
+                y += ystep
+                error += dx    
 
     def draw_object(self,object:objects.Object,value='■',fill = False):
         if type(object) == objects.Circle:
             self.draw_circle(object,value,fill)
             return
-        elif type(object) == objects.Triangle and fill:
-            
+        elif type(object) == objects.Triangle and fill:            
             self.draw_filled_triangle(object,value)
             return
 
 
         for line in object.get_lines():
-            steep = math.fabs(line[3]-line[1]) > math.fabs(line[2]-line[0])
-            if steep:
-                x0 = line[1]
-                y0 = line[0]
-                x1 = line[3]
-                y1 = line[2]
-            else:
-                x0 = line[0]
-                y0 = line[1]
-                x1 = line[2]
-                y1 = line[3]
-
-            if x0 > x1:
-                b = x0
-                x0 = x1
-                x1 = b
-
-                b = y0
-                y0 = y1
-                y1 = b
-
-            dx = x1 - x0
-            dy = math.fabs(y1-y0)
-            error = dx // 2
-            if (y0 < y1):
-                ystep = 1
-            else:
-                ystep = -1
-
-            y = y0
-
-            for x in range(x0,x1+1):
-                if steep:
-                    self.set_pixel(y,x,value)
-                else:
-                    self.set_pixel(x,y,value)
-
-                error -= dy
-                if error < 0:
-                    y += ystep
-                    error += dx
+            self.draw_line(line)
     
     
-    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=True):
+    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=False):
         for y in range(len(sprite.data)):
             for x in range(len(sprite.data[y])):
                 point = sprite.data[y][x]
-                
                 if not rev:
                     point = not point
                 if point:
                     self.set_pixel(x+position[0],y+position[1],value)
-                
         
                     
              
@@ -250,42 +260,12 @@ class Screne:
 
 
 if __name__ == '__main__':
-    scene = Screne(filler = '□',border = '-')
-    #scene = Screne(filler=' ',border='-')
-    #triangle = objects.Triangle((37,6,100,32,2,17))
-    #line = objects.Line((0,0,15,20))
-    #line1 = objects.Line((0,20,15,0))
-
-    #line2 = objects.Line((0+20,20,15+20,0))
-    #line3 = objects.Line((0+20,0,15+10,10))
-
-    #line4 = objects.Line((40,0,40,20))
-    #line5 = objects.Line((40,20,60,0))
-    #line6 = objects.Line((60,0,60,20))
-    #line7 = objects.Line((45,0,55,0))
-    ##sq = objects.Tetragon((1,1,40,4,20,15,5,10))
-    ##cr = objects.Circle((50,20),15)
-    #y_axis = objects.Line((0,0,0,scene.size[1]-1))
-    
+    scene = Screne(filler = '□',border = '■')
+    pent = objects.Sprite('pent.jpg',scene.size)
+    scene.set_sprite(pent,(0,0),rev = False)
     time.sleep(5)
-    sprite = objects.Sprite('pent.jpg',scene.size)
-    #sprite.rotate(180)
-    scene.set_sprite(sprite,(0,0),rev=True)
-    #scene.set_image('ck.png',(0,0),scene.size,rev=False)
-    #scene.set_image('qr.png',(0,0),scene.size,rev=True)
-    #scene.draw_object(triangle,'■',False)
+    scene.print()
     
-    #scene.draw_object(line,'■')
-    #scene.draw_object(line1,'■')
-
-    #scene.draw_object(line2,'■')
-    #scene.draw_object(line3,'■')
-
-    #scene.draw_object(line4,'■')
-    #scene.draw_object(line5,'■')
-    #scene.draw_object(line6,'■')
-    #scene.draw_object(line7,'■')
-    scene.print(1,sides=False)
     
 
     

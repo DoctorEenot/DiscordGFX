@@ -54,14 +54,9 @@ if __name__ == '__main__':
 
     step = 0.1
 
-    y = -1.5
-    while y<=1.5:
-        x = -1
-        while x<= 0:
-            Gr.screen.fill()
-            Gr.renderModel(cube,[x,y,1.5])
-            Gr.screen.print(1.5,sides=False)
-            #DiscordGFX.time.sleep(1.5)
-            x+=step
-        y+=step
+    y = -0.7
+
+    Gr.renderModel(cube,[-0.5,y,1])
+    Gr.screen.print(1.5,sides=False)
+    
     
