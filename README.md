@@ -3,14 +3,18 @@ Graphics engine for text messages(firstly designed for Discord)
 
 DiscordGFX.py - main 2D engine
 
-To use you must open chat in discord because it sends "pixels" as text message
+To use it, you must open chat in discord, because it sends "pixels" as text message
 
 If you can't understand why nothing appears in discord, check that video (https://youtu.be/yt3ilDZr94A)
 
-pip install pywin32
+Actually you can send messages via bot, but that's pretty easy, so you can write that by yourself.
 
-pip install pyautogui
+# Dependencies:
 
-pip install Pillow
+  pip install pywin32
 
-pip install numpy
+  pip install pyautogui
+
+  pip install Pillow
+
+  pip install numpy
