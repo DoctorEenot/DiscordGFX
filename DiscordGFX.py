@@ -1,17 +1,26 @@
-from win32clipboard import * #pip install pywin32
+#from win32clipboard import * #pip install pywin32
 import pyautogui             #pip install pyautogui
 import time                  
 import math
 import objects
-#from PIL import Image        #pip install Pillow
-#import numpy                 #pip install numpy
+#import discord
+import DiscordAPI
 
+
+def remove_last_symbols(string,symbols):
+    counter = len(string)-1
+    while string[counter] == symbols and counter >=0:
+        counter -= 1
+    return string[:counter+1]
 
 
 
 class Screne:
-    def __init__(self,size=(152,39),filler = None,border=None):
+    def __init__(self,login,password,size=(408,39),filler = None,border=None):
         #(152,39) standart size for full oppened discord window
+        self.client = DiscordAPI.API()
+        self.client.login(login,password)       
+
         self.size = size
         if filler != None:
             if len(filler) > 7:
@@ -54,56 +63,100 @@ class Screne:
         pyautogui.press('enter')
 
     
-    def print(self,timeout=1,sides=True):
+
+    def print(self,channelid:int,sides=True,space_optimisation=False):
         '''
-        Only for screen!
+        space_optimisation = False/(a,b)
         '''
 
         if self.border != None:
             horizontal_border = f'{self.border}'*self.size[0]
-            self.set_to_clipboard(horizontal_border)
-            self.copy()
+            self.client.post_message(channelid,horizontal_border)
             if sides:
                 for y in range(0,self.size[1]):
                     self.set_pixel(0,y,self.border)
-                    self.set_pixel(self.size[0]-1,y,self.border)
-       
-        
+
         if self.size[0]*self.size[1]<=2000:            
             buf = ''.join(self.scene[0:self.size[0]])+'\n'
             for y in range(1,self.size[1]):
                 for x in range(self.size[0]):
                     buf += self.get_pixel(x,y)
-                #if y != self.size[1]:
                 buf += '\n'
-            self.set_to_clipboard(buf)
-            self.copy()
-        else:
-            max_y = 2000//self.size[0]
-            if max_y * self.size[0] + max_y > 2000:
-                max_y -= 1
-            offset = 0
-            offset_up = max_y
-            while offset != self.size[1]:
-                buf = ''
-                for y in range(offset,offset_up):
-                    for x in range(self.size[0]):
-                        buf += self.get_pixel(x,y)
-                    buf += '\n'
-                self.set_to_clipboard(buf)
-                self.copy()
-                offset = offset_up
-                
-                if self.size[1]-offset_up>max_y:
-                    offset_up+=max_y
-                else:
-                    offset_up = self.size[1]
-                
-                time.sleep(timeout)
 
-        #if self.border != None:
-        #    self.set_to_clipboard(horizontal_border)
-        #    self.copy()
+            self.client.post_message(channelid,buf)
+        else:
+            if space_optimisation == False:
+                buf = []
+                for y in range(self.size[1]):                    
+                    not_nul = False
+                    counter = 0
+                    timing_buf = ''
+                    for x in range(self.size[0]-1,0,-1):
+                        char = self.get_pixel(x,y)
+                        if not not_nul and char != self.filler:
+                            not_nul = True
+                        if not_nul:
+                            timing_buf = char+timing_buf
+
+
+                    timing_buf = self.get_pixel(0,y)+timing_buf
+                    if not not_nul:                                               
+                        buf.append(self.border)                                                
+                    else:
+                        buf.append(timing_buf)
+            else:
+                buf = []
+                for y in range(self.size[1]):                    
+                    not_nul = False
+                    counter = 0
+                    x = 1
+                    timing_buf = ''
+                    timing_buf = self.get_pixel(0,y)
+                    while x<self.size[0]-1:
+                    
+                        char = self.get_pixel(x,y)
+                        if not not_nul and char != self.filler:
+                            not_nul = True
+
+                        if char == self.filler:
+                            counter += 1
+                        else:
+                            counter = 0
+                        
+                        if counter % space_optimisation[0] == 0 and counter!= 0 and x+space_optimisation[1]<=self.size[0]-1:
+                            new_x = 0
+                            for new_x in range(x,x+space_optimisation[1]):
+                                if self.get_pixel(new_x,y) != self.filler:
+                                    new_x -= 1
+                                    break
+                            x = new_x
+                            counter = 0                       
+                        timing_buf += char
+                        x += 1
+                    timing_buf = remove_last_symbols(timing_buf,self.filler)
+                    
+                    if not not_nul:                                               
+                        buf.append(self.border)                                                
+                    else:
+                        buf.append(timing_buf)                     
+
+            counter = 0
+            to_send = ''
+            sent = False
+            while counter != len(buf):
+                if len(to_send)+1 + len(buf[counter]) <= 2000:
+                    sent = False
+                    if len(to_send) != 0:
+                        to_send += '\n'
+                    to_send += buf[counter]
+                else:
+                    sent = True
+                    self.client.post_message(channelid,to_send)
+                    to_send = buf[counter]
+                counter += 1
+            if not sent:
+                self.client.post_message(channelid,to_send)
+
 
     def fill(self):
         self.scene = [self.filler]*(self.size[0]*self.size[1])
@@ -241,7 +294,7 @@ class Screne:
 
 
         for line in object.get_lines():
-            self.draw_line(line)
+            self.draw_line(line,value)
     
     
     def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=False):
@@ -254,17 +307,28 @@ class Screne:
                     self.set_pixel(x+position[0],y+position[1],value)
         
                     
-             
+  
+                    
+
+
+
 
 
 
 
 if __name__ == '__main__':
-    scene = Screne(filler = '□',border = '■')
-    pent = objects.Sprite('pent.jpg',scene.size)
-    scene.set_sprite(pent,(0,0),rev = False)
-    time.sleep(5)
-    scene.print()
+    #(1223,114)
+    scene = Screne('','',(1223,99),filler=' ',border='·')#filler = '□')
+    
+    #sprite = objects.Sprite('Ebalo.jpg',scene.size,30)
+    #scene.set_sprite(sprite,(0,0),'·',rev=True)
+
+    sprite = objects.Sprite('vibecheck.jpg',scene.size,200)
+    scene.set_sprite(sprite,(0,0),'·',rev=False)
+    #circle = objects.Circle((100,15),10)
+    #scene.draw_circle(circle,'·',False)
+    
+    scene.print(,space_optimisation=(19,2))
     
     
 
