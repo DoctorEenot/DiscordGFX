@@ -38,17 +38,24 @@ class Circle:
         self.radius = radius
 
 
+
+
+
+
 class Sprite:
-    def __init__(self,image,size,koef=128):
+    def __init__(self,image,size,koef=(50,200)):
+        '''koef must be sorted in ascending '''
         file = Image.open(image)
         if size == True:
             file.thumbnail(self.size,Image.ANTIALIAS)
         else:
             file = file.resize(size)
         gray = file.convert('L')
-        self.bw = gray.point(lambda x: 0 if x<koef else 255, '1')
+        #self.bw = gray.point(lambda x: 0 if x<koef[0] else (255 if x>koef[1] else 1), '1')
 
-        self.data = numpy.asarray(self.bw)
+        #self.data = numpy.array(self.bw.getchannel(0))
+        self.koef = koef
+        self.data = numpy.asarray(gray)
 
     def rotate(self,angle):
         if angle == 90:

@@ -211,10 +211,17 @@ class Screne:
             P1 = P2
             P2 = P_buf
 
-        a2 = (P1[1]-P0[1])/(P1[0]-P0[0])
+        if P1[0] == P0[0]:
+            a2 = P0[1]
+        else:
+            a2 = (P1[1]-P0[1])/(P1[0]-P0[0])
         b2 = P0[1] - a2*P0[0]
 
-        a1 = (P2[1]-P0[1])/(P2[0]-P0[0])
+
+        if P2[0] == P0[0]:
+            a2 = P0[1]
+        else:
+            a2 = (P2[1]-P0[1])/(P2[0]-P0[0])
         b1 = P0[1] - a1*P0[0]
 
         if P0[0] < P1[0]:
@@ -222,10 +229,12 @@ class Screne:
         else:
             side = +1
 
-
         for y in range(P0[1],P2[1]+1):
             if y == P1[1]:
-                a2 = (P2[1]-P1[1])/(P2[0]-P1[0])
+                if P2[0] == P1[0]:
+                    a2 = P1[1]
+                else:            
+                    a2 = (P2[1]-P1[1])/(P2[0]-P1[0])
                 b2 = P1[1] - a2*P1[0]
 
             x1 = int(((y-b1)/a1))+side
@@ -297,13 +306,60 @@ class Screne:
             self.draw_line(line,value)
     
     
-    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=False):
+    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=False,colours=3):
+        delta = sprite.koef[1] - sprite.koef[0]
+        part = delta//colours
         for y in range(len(sprite.data)):
+            #prev_is_gray = False
+            prev_is_gray = [0]*colours
             for x in range(len(sprite.data[y])):
                 point = sprite.data[y][x]
-                if not rev:
-                    point = not point
-                if point:
+                if point <= sprite.koef[0]:
+                    prev_is_gray = [0]*colours#False
+                    if rev:
+                        point = 0
+                    else:
+                        point = 255
+                elif point >= sprite.koef[1]:
+                    prev_is_gray = [0]*colours#False
+                    if rev:
+                        point = 255
+                    else:
+                        point = 0
+                else:
+                    #part_koef = 1
+                    if rev:
+                        for part_koef in range(1,colours+1):
+                            if point<=(part*part_koef) + sprite.koef[0]:
+                                if prev_is_gray[part_koef-1] == 0 or prev_is_gray[part_koef-1] > colours-(part_koef-1):
+                                    point = 0
+                                    prev_is_gray[part_koef-1] = 1
+                                else:
+                                    prev_is_gray[part_koef-1] += 1
+                                    point = 255
+                                break
+                    else:
+                        for part_koef in range(colours,0,-1):
+                            if point>=(part*part_koef) + sprite.koef[0]:
+
+                                if prev_is_gray[part_koef-1] == 0 or prev_is_gray[part_koef-1] > colours-(part_koef-1):
+                                    point = 0
+                                    prev_is_gray[part_koef-1] = 1
+                                else:
+                                    prev_is_gray[part_koef-1] += 1
+                                    point = 255
+                                break
+                    #if prev_is_gray:
+                    #    point = 0
+                    #    prev_is_gray = False
+                    #else:
+                    #    point = 255
+                    #    prev_is_gray = True
+
+                #if not rev:
+                #    point = not point
+
+                if point == 255:
                     self.set_pixel(x+position[0],y+position[1],value)
         
                     
@@ -318,17 +374,18 @@ class Screne:
 
 if __name__ == '__main__':
     #(1223,114)
-    scene = Screne('','',(1223,99),filler=' ',border='·')#filler = '□')
+    scene = Screne('','',(1223,109),filler=' ',border='·')#filler = '□')
     
     #sprite = objects.Sprite('Ebalo.jpg',scene.size,30)
     #scene.set_sprite(sprite,(0,0),'·',rev=True)
-
-    sprite = objects.Sprite('vibecheck.jpg',scene.size,200)
-    scene.set_sprite(sprite,(0,0),'·',rev=False)
+    #scene.draw_line((50,10,50,90))
+    sprite = objects.Sprite('che.jpg',scene.size)
+    scene.set_sprite(sprite,(0,0),'·',rev=True,colours=30)
     #circle = objects.Circle((100,15),10)
     #scene.draw_circle(circle,'·',False)
     
-    scene.print(,space_optimisation=(19,2))
+    scene.print(,space_optimisation=False)#(19,2)
+    print('Ended')
     
     
 
