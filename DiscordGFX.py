@@ -16,7 +16,7 @@ def remove_last_symbols(string,symbols):
 
 
 class Screne:
-    def __init__(self,login,password,size=(408,39),filler = None,border=None):
+    def __init__(self,login,password,size=(408,39),filler = ' ',border=None):
         #(152,39) standart size for full oppened discord window
         self.client = DiscordAPI.API()
         self.client.login(login,password)       
@@ -41,7 +41,7 @@ class Screne:
     def get_pixel(self,x,y) -> str:
         return self.scene[self.convert_to_absolute(x,y)]
 
-    def set_pixel(self,x,y,value='■'):
+    def set_pixel(self,x,y,value='·'):
         if len(value) > 1:
             raise Exception('value must be 1 character')
         
@@ -193,7 +193,7 @@ class Screne:
                 x -= 1
                 radius_error += 2*(y-x+1)
         
-    def draw_filled_triangle(self,object:objects.Triangle,value='■'):
+    def draw_filled_triangle(self,object:objects.Triangle,value='·'):
         P0 = (object.points[0],object.points[1])
         P1 = (object.points[2],object.points[3])
         P2 = (object.points[4],object.points[5])
@@ -247,7 +247,7 @@ class Screne:
             for x in range(x1,x2):
                 self.set_pixel(x,y,value)
 
-    def draw_line(self,line,value='■'):
+    def draw_line(self,line,value='·'):
         '''
         line = (x1,y1,x2,y2)
         '''
@@ -293,7 +293,7 @@ class Screne:
                 y += ystep
                 error += dx    
 
-    def draw_object(self,object:objects.Object,value='■',fill = False):
+    def draw_object(self,object:objects.Object,value='·',fill = False):
         if type(object) == objects.Circle:
             self.draw_circle(object,value,fill)
             return
@@ -306,7 +306,7 @@ class Screne:
             self.draw_line(line,value)
     
     
-    def set_sprite(self,sprite:objects.Sprite,position,value='■',rev=False,colours=3):
+    def set_sprite(self,sprite:objects.Sprite,position,value='·',rev=False,colours=3):
         delta = sprite.koef[1] - sprite.koef[0]
         part = delta//colours
         for y in range(len(sprite.data)):
